@@ -1,0 +1,285 @@
+MariaDB [(none)]> use mytestDB;
+Database changed
+MariaDB [mytestDB]> select * from pieces;
++------+----------+
+| Code | Name     |
++------+----------+
+|    1 | Sprocket |
+|    2 | Screw    |
+|    3 | Nut      |
+|    4 | Bolt     |
++------+----------+
+4 rows in set (0.05 sec)
+
+MariaDB [mytestDB]> select * from providers;
++------+----------------------+
+| Code | Name                 |
++------+----------------------+
+| HAL  | Clarke Enterprises   |
+| RBT  | Susan Calvin Corp.   |
+| TNBC | Skellington Supplies |
++------+----------------------+
+3 rows in set (0.03 sec)
+
+MariaDB [mytestDB]> select * from provides;
++------+-------+----------+-------+
+| Code | Piece | Provider | Price |
++------+-------+----------+-------+
+|    1 |     1 | HAL      | 10.00 |
+|    2 |     1 | RBT      | 15.00 |
+|    3 |     2 | HAL      | 20.00 |
+|    4 |     2 | RBT      | 15.00 |
+|    5 |     2 | TNBC     | 14.00 |
+|    6 |     3 | RBT      | 50.00 |
+|    7 |     3 | TNBC     | 45.00 |
+|    8 |     4 | HAL      |  5.00 |
+|    9 |     4 | RBT      |  7.00 |
++------+-------+----------+-------+
+9 rows in set (0.06 sec)
+
+5.1 MariaDB [mytestDB]> select name from pieces;
++----------+
+| name     |
++----------+
+| Sprocket |
+| Screw    |
+| Nut      |
+| Bolt     |
++----------+
+4 rows in set (0.00 sec)
+
+5.2 MariaDB [mytestDB]> select name from providers;
++----------------------+
+| name                 |
++----------------------+
+| Clarke Enterprises   |
+| Susan Calvin Corp.   |
+| Skellington Supplies |
++----------------------+
+3 rows in set (0.00 sec)
+
+5.3 MariaDB [mytestDB]> select code,AVG(price) from provides;
++------+------------+
+| code | AVG(price) |
++------+------------+
+|    1 |  20.111111 |
++------+------------+
+1 row in set (0.03 sec)
+
+5.3 MariaDB [mytestDB]> select AVG(price) as AVG_price,piece from provides;
++-----------+-------+
+| AVG_price | piece |
++-----------+-------+
+| 20.111111 |     1 |
++-----------+-------+
+1 row in set (0.00 sec)
+
+MariaDB [mytestDB]> select AVG(price) as AVG_price,piece from provides by piece;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'by piece' at line 1
+MariaDB [mytestDB]> select AVG(price) as AVG_price,piece from provides by pieces;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'by pieces' at line 1
+MariaDB [mytestDB]> select AVG(price) as AVG_price,piece from provides group by pieces;
+ERROR 1054 (42S22): Unknown column 'pieces' in 'group statement'
+5.3 MariaDB [mytestDB]> select AVG(price) as AVG_price,piece from provides group by piece;
++-----------+-------+
+| AVG_price | piece |
++-----------+-------+
+| 12.500000 |     1 |
+| 16.333333 |     2 |
+| 47.500000 |     3 |
+|  6.000000 |     4 |
++-----------+-------+
+4 rows in set (0.06 sec)
+
+5.3 MariaDB [mytestDB]> select AVG(price) as AVG_price,piece from provides group by code;
++-----------+-------+
+| AVG_price | piece |
++-----------+-------+
+| 10.000000 |     1 |
+| 15.000000 |     1 |
+| 20.000000 |     2 |
+| 15.000000 |     2 |
+| 14.000000 |     2 |
+| 50.000000 |     3 |
+| 45.000000 |     3 |
+|  5.000000 |     4 |
+|  7.000000 |     4 |
++-----------+-------+
+9 rows in set (0.00 sec)
+
+5.3 MariaDB [mytestDB]> select AVG(price) as AVG_price,code from provides group by piece;
++-----------+------+
+| AVG_price | code |
++-----------+------+
+| 12.500000 |    1 |
+| 16.333333 |    3 |
+| 47.500000 |    6 |
+|  6.000000 |    8 |
++-----------+------+
+4 rows in set (0.00 sec)
+
+MariaDB [mytestDB]> select * from provides;
++------+-------+----------+-------+
+| Code | Piece | Provider | Price |
++------+-------+----------+-------+
+|    1 |     1 | HAL      | 10.00 |
+|    2 |     1 | RBT      | 15.00 |
+|    3 |     2 | HAL      | 20.00 |
+|    4 |     2 | RBT      | 15.00 |
+|    5 |     2 | TNBC     | 14.00 |
+|    6 |     3 | RBT      | 50.00 |
+|    7 |     3 | TNBC     | 45.00 |
+|    8 |     4 | HAL      |  5.00 |
+|    9 |     4 | RBT      |  7.00 |
++------+-------+----------+-------+
+9 rows in set (0.00 sec)
+
+5.3 MariaDB [mytestDB]> select pi.code, avg(pro.price)from pieces pi,provides pro where pi.code = pro.piece group by pi.code;
++------+----------------+
+| code | avg(pro.price) |
++------+----------------+
+|    1 |      12.500000 |
+|    2 |      16.333333 |
+|    3 |      47.500000 |
+|    4 |       6.000000 |
++------+----------------+
+4 rows in set (0.00 sec)
+
+5.4 MariaDB [mytestDB]> select pro.name from providers pro, provides prov where pro.code = prov.provider and prov.piece = 1;
++--------------------+
+| name               |
++--------------------+
+| Clarke Enterprises |
+| Susan Calvin Corp. |
++--------------------+
+2 rows in set (0.00 sec)
+
+MariaDB [mytestDB]> select name from providers;
++----------------------+
+| name                 |
++----------------------+
+| Clarke Enterprises   |
+| Susan Calvin Corp.   |
+| Skellington Supplies |
++----------------------+
+3 rows in set (0.00 sec)
+
+MariaDB [mytestDB]> select * from providers;
++------+----------------------+
+| Code | Name                 |
++------+----------------------+
+| HAL  | Clarke Enterprises   |
+| RBT  | Susan Calvin Corp.   |
+| TNBC | Skellington Supplies |
++------+----------------------+
+3 rows in set (0.00 sec)
+
+5.5 MariaDB [mytestDB]> select pi.name from pieces pi, provides prov where pi.code =  prov.piece and prov.provider = 'HAL';
++----------+
+| name     |
++----------+
+| Sprocket |
+| Screw    |
+| Bolt     |
++----------+
+3 rows in set (0.00 sec)
+
+5.8MariaDB [mytestDB]> UPDATE Provides SET Price = Price + 1;
+Query OK, 9 rows affected (0.08 sec)
+Rows matched: 9  Changed: 9  Warnings: 0
+
+MariaDB [mytestDB]> select * from  provides;
++------+-------+----------+-------+
+| Code | Piece | Provider | Price |
++------+-------+----------+-------+
+|    1 |     1 | HAL      | 11.00 |
+|    2 |     1 | RBT      | 16.00 |
+|    3 |     2 | HAL      | 21.00 |
+|    4 |     2 | RBT      | 16.00 |
+|    5 |     2 | TNBC     | 15.00 |
+|    6 |     3 | RBT      | 51.00 |
+|    7 |     3 | TNBC     | 46.00 |
+|    8 |     4 | HAL      |  6.00 |
+|    9 |     4 | RBT      |  8.00 |
++------+-------+----------+-------+
+9 rows in set (0.00 sec)
+
+5.5MariaDB [mytestDB]> SELECT Name FROM Pieces WHERE EXISTS (   SELECT * FROM Provides     WHERE Provider = 'HAL'       AND Piece = Pieces.Code );
++----------+
+| Name     |
++----------+
+| Sprocket |
+| Screw    |
+| Bolt     |
++----------+
+3 rows in set (0.05 sec)
+
+5.7 MariaDB [mytestDB]> INSERT INTO provides(code,provider,price) VALUES(1,'TNBC','7');
+Query OK, 1 row affected, 1 warning (0.09 sec)
+
+MariaDB [mytestDB]> SELECT * FROM PROVIDES;
++------+-------+----------+-------+
+| Code | Piece | Provider | Price |
++------+-------+----------+-------+
+|    1 |     0 | TNBC     |  7.00 |
+|    1 |     1 | HAL      | 11.00 |
+|    2 |     1 | RBT      | 16.00 |
+|    3 |     2 | HAL      | 21.00 |
+|    4 |     2 | RBT      | 16.00 |
+|    5 |     2 | TNBC     | 15.00 |
+|    6 |     3 | RBT      | 51.00 |
+|    7 |     3 | TNBC     | 46.00 |
+|    8 |     4 | HAL      |  6.00 |
+|    9 |     4 | RBT      |  8.00 |
++------+-------+----------+-------+
+10 rows in set (0.00 sec)
+
+MariaDB [mytestDB]> DELETE FROM  provides WHERE PROVIDES='RBT' AND piece=4;
+ERROR 1054 (42S22): Unknown column 'PROVIDES' in 'where clause'
+5.9 MariaDB [mytestDB]> DELETE FROM  provides WHERE provider='RBT' AND piece=4;
+Query OK, 1 row affected (0.09 sec)
+
+MariaDB [mytestDB]> SELECT * FROM PROVIDES;
++------+-------+----------+-------+
+| Code | Piece | Provider | Price |
++------+-------+----------+-------+
+|    1 |     0 | TNBC     |  7.00 |
+|    1 |     1 | HAL      | 11.00 |
+|    2 |     1 | RBT      | 16.00 |
+|    3 |     2 | HAL      | 21.00 |
+|    4 |     2 | RBT      | 16.00 |
+|    5 |     2 | TNBC     | 15.00 |
+|    6 |     3 | RBT      | 51.00 |
+|    7 |     3 | TNBC     | 46.00 |
+|    8 |     4 | HAL      |  6.00 |
++------+-------+----------+-------+
+9 rows in set (0.00 sec)
+
+5.6 MariaDB [mytestDB]>  select p2.price, p1.name, p3.name from provides as p2 inner join providers as p3 on p2.provider = p3.code inner join pieces as p1 on p1.code = p2.piece where price = (select max(p2.price) from provides as p2 where p2.piece = p1.code);
++-------+----------+--------------------+
+| price | name     | name               |
++-------+----------+--------------------+
+| 16.00 | Sprocket | Susan Calvin Corp. |
+| 21.00 | Screw    | Clarke Enterprises |
+| 51.00 | Nut      | Susan Calvin Corp. |
+|  6.00 | Bolt     | Clarke Enterprises |
++-------+----------+--------------------+
+4 rows in set (0.00 sec)
+
+5.6 MariaDB [mytestDB]> SELECT Pieces.Name, Providers.Name, Price
+    ->    FROM Pieces INNER JOIN Provides ON Pieces.Code = Piece
+    ->                INNER JOIN Providers ON Providers.Code = Provider
+    ->    WHERE Price =
+    ->    (
+    ->      SELECT MAX(Price) FROM Provides
+    ->      WHERE Piece = Pieces.Code
+    ->    );
++----------+--------------------+-------+
+| Name     | Name               | Price |
++----------+--------------------+-------+
+| Sprocket | Susan Calvin Corp. | 16.00 |
+| Screw    | Clarke Enterprises | 21.00 |
+| Nut      | Susan Calvin Corp. | 51.00 |
+| Bolt     | Clarke Enterprises |  6.00 |
++----------+--------------------+-------+
+4 rows in set (0.00 sec)
